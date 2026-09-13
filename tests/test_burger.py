@@ -2,6 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from tests.constants import BUN_NAME, BUN_PRICE, FILLING_NAME, FILLING_PRICE, SAUCE_NAME, SAUCE_PRICE
+
 
 class TestBurgerSetBuns:
     """Тесты установки булочки бургера."""
@@ -57,13 +59,13 @@ class TestBurgerGetPrice:
     def test_get_price_with_no_ingredients_counts_only_bun(self, burger, mock_bun):
         burger.set_buns(mock_bun)
 
-        assert burger.get_price() == 200.0
+        assert burger.get_price() == BUN_PRICE * 2
 
     @pytest.mark.parametrize(
         'ingredient_prices, expected_extra',
         [
-            ([50.0], 50.0),
-            ([50.0, 150.0], 200.0),
+            ([SAUCE_PRICE], SAUCE_PRICE),
+            ([SAUCE_PRICE, FILLING_PRICE], SAUCE_PRICE + FILLING_PRICE),
             ([], 0.0),
         ],
     )
@@ -74,7 +76,7 @@ class TestBurgerGetPrice:
             ingredient.get_price.return_value = price
             burger.add_ingredient(ingredient)
 
-        assert burger.get_price() == 200.0 + expected_extra
+        assert burger.get_price() == BUN_PRICE * 2 + expected_extra
 
 
 class TestBurgerGetReceipt:
@@ -85,7 +87,7 @@ class TestBurgerGetReceipt:
 
         receipt = burger.get_receipt()
 
-        assert receipt.count('black bun') == 2
+        assert receipt.count(BUN_NAME) == 2
 
     def test_get_receipt_contains_ingredient_lines(self, burger, mock_bun, mock_sauce, mock_filling):
         burger.set_buns(mock_bun)
@@ -94,8 +96,8 @@ class TestBurgerGetReceipt:
 
         receipt = burger.get_receipt()
 
-        assert 'sauce hot sauce' in receipt
-        assert 'filling cutlet' in receipt
+        assert f'sauce {SAUCE_NAME}' in receipt
+        assert f'filling {FILLING_NAME}' in receipt
 
     def test_get_receipt_contains_price(self, burger, mock_bun, mock_sauce):
         burger.set_buns(mock_bun)
@@ -103,4 +105,4 @@ class TestBurgerGetReceipt:
 
         receipt = burger.get_receipt()
 
-        assert 'Price: 250.0' in receipt
+        assert f'Price: {BUN_PRICE * 2 + SAUCE_PRICE}' in receipt
